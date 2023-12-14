@@ -37,15 +37,15 @@ def read_player_data():
     return player_data
 
 def present_top_players(player_data):
-    try:
-        sorted_players = sorted(player_data, key=lambda x: (x['won_matches'] / x['total_matches']), reverse=True)
-    except ZeroDivisionError:
-        print("Dina spelare har inga matcher än, kan inte rangordna baserat på matcher")
-    else:
-        print("Plac Namn vunna spelade andel vunna")
-        for i, player in enumerate(sorted_players[:10]):
-            win_ratio = player['won_matches'] / player['total_matches'] if player['total_matches'] > 0 else 0
-            print(f"{i + 1} {player['name']} {player['won_matches']} {player['total_matches']} {win_ratio:.2f}")
+    sorted_players = sorted(player_data, key=lambda x: (x['won_matches'] / x['total_matches']) if x['total_matches'] > 0 else 0, reverse=True)
+    print("Plac \tNamn \t     vunna    spelade andel vunna")
+    print(u'\u2500' * 50)
+    for i, player in enumerate(sorted_players[:10]):
+        if player['total_matches'] > 0:
+            win_ratio = player['won_matches'] / player['total_matches']
+        else:
+            win_ratio = 0
+        print(f"{i + 1:<2} \t{player['name']:<12.10}  {player['won_matches']:2}\t{player['total_matches']:2} \t{win_ratio:.2f}")
 
 def create_team():
     pass
