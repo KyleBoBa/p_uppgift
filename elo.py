@@ -1,5 +1,6 @@
 #P uppgift - elo för league
 
+import csv
 from player import Player
 
 def menu():
@@ -17,50 +18,83 @@ def menu():
 
 def read_player_data():
     player_data = []
-    with open('players.csv', 'r') as file:
-        for line in file:
-            line = line.strip().split(";")
-            player_name = line[0].strip()
-            win_early = float(line[1].strip())
-            win_mid = float(line[2].strip())
-            win_late = float(line[3].strip())
-            won_matches = int(line[4].strip())
-            total_matches = int(line[5].strip())
-            player_data.append({
-                'name': player_name,
-                'win_early': win_early,
-                'win_mid': win_mid,
-                'win_late': win_late,
-                'won_matches': won_matches,
-                'total_matches': total_matches
-            })
+    try:
+        with open('players.csv', 'r') as file:
+            csv_reader = csv.reader(file, delimiter=';')
+            next(csv_reader)  # Skip header row
+            for line in csv_reader:
+                player_name = line[0].strip()
+                win_early = float(line[1].strip())
+                win_mid = float(line[2].strip())
+                win_late = float(line[3].strip())
+                won_matches = int(line[4].strip())
+                total_matches = int(line[5].strip())
+
+                #validera data
+                if not (0 <= win_early <= 1):
+                    raise ValueError("Invalid win_early value")
+                if not (0 <= win_mid <= 1):
+                    raise ValueError("Invalid win_mid value")
+                if not (0 <= win_late <= 1):
+                    raise ValueError("Invalid win_late value")
+                if not (0 <= won_matches <= total_matches):
+                    raise ValueError("Invalid won_matches or total_matches value")
+                
+                player_data.append({
+                    'name': player_name,
+                    'win_early': win_early,
+                    'win_mid': win_mid,
+                    'win_late': win_late,
+                    'won_matches': won_matches,
+                    'total_matches': total_matches
+                })
+    except ValueError:
+        print("Inkorrekt data värden, kolla över filen")
     return player_data
 
-def assign_elo():
+def assign_elo(player_data):
     base_player_elo = 1200
+    for player in player_data:
+        player['elo'] = base_player_elo
+    return player_data
 
 def create_team():
-    total_players = int(input("Hur många spelare är tillgängliga att köra? "))
+    while True:
+        try:
+            total_players = int(input("Hur många spelare är tillgängliga att köra? "))
+            break
+        except ValueError:
+            print("Skriv in ett antal.")
     even_players_on_teams = total_players % 10
     if even_players_on_teams != 0:
         print(f"{even_players_on_teams} spelare kommer att stå över denna runda.")
         total_players -= even_players_on_teams
     total_teams = total_players // 5
     print(f"Det kommer att skapas {total_teams} lag")
+    team_list = []
     for i in range(total_teams):
         team = []
-    return team
-
-def manual_assign_player():
-    pass
+        team_list.append(team)
+    return team_list
 
 def sort_players(player_data):
-    """sorted_players = sorted(player_data, key=lambda x: (x['']))"""
+    sorted_players = sorted(player_data, key=lambda x: (x['elo']))
+    return sorted_players
 
-def distibute_players():
+def distibute_players(player_data, team_list):
+    number_of_teams = len(team_list)
+    players_per_team = 5
+
+    for i in player_data:
+        if 
+
+def manual_distribute_players():
     pass
 
 def simulate_match(player_data):
+    pass
+
+def adjust_player_elo():
     pass
 
 def match_result():
@@ -81,9 +115,14 @@ def main():
     players = {}
     """manual_create_player(players)"""
     player_data = read_player_data()
+    player_data = assign_elo(player_data)
     present_top_players(player_data)
     sort_players(player_data)
-    teams = create_team()
+    team_list = create_team()
+    sorted_player_list = sort_players(player_data)
+    distributed_teams = distibute_players(player_data, team_list)
+    for i, team in enumerate(distributed_teams):
+        print(f"Team {i + 1}: {team}")
 
 if __name__ == "__main__":
     main()
