@@ -36,8 +36,38 @@ def read_player_data():
             })
     return player_data
 
+def assign_elo():
+    base_player_elo = 1200
+
+def create_team():
+    total_players = int(input("Hur många spelare är tillgängliga att köra? "))
+    even_players_on_teams = total_players % 10
+    if even_players_on_teams != 0:
+        print(f"{even_players_on_teams} spelare kommer att stå över denna runda.")
+        total_players -= even_players_on_teams
+    total_teams = total_players // 5
+    print(f"Det kommer att skapas {total_teams} lag")
+    for i in range(total_teams):
+        team = []
+    return team
+
+def manual_assign_player():
+    pass
+
+def sort_players(player_data):
+    """sorted_players = sorted(player_data, key=lambda x: (x['']))"""
+
+def distibute_players():
+    pass
+
+def simulate_match(player_data):
+    pass
+
+def match_result():
+    print(f"Match vinnaren är {match_winner}")
+
 def present_top_players(player_data):
-    sorted_players = sorted(player_data, key=lambda x: (x['won_matches'] / x['total_matches']) if x['total_matches'] > 0 else 0, reverse=True)
+    sorted_players = sorted(player_data, key=lambda x: (x['won_matches'] / x['total_matches']) if x['total_matches'] > 0 else 0)
     print("Plac \tNamn \t     vunna    spelade andel vunna")
     print(u'\u2500' * 50)
     for i, player in enumerate(sorted_players[:10]):
@@ -47,30 +77,13 @@ def present_top_players(player_data):
             win_ratio = 0
         print(f"{i + 1:<2} \t{player['name']:<12.10}  {player['won_matches']:2}\t{player['total_matches']:2} \t{win_ratio:.2f}")
 
-def create_team():
-    pass
-
-def manual_assign_player():
-    pass
-
-def sort_players():
-    pass
-
-def distibute_players():
-    pass
-
-def simulate_match():
-    pass
-
-def match_result():
-    pass
-
 def main():
     players = {}
     """manual_create_player(players)"""
-    print(players)
     player_data = read_player_data()
     present_top_players(player_data)
-    
+    sort_players(player_data)
+    teams = create_team()
+
 if __name__ == "__main__":
     main()
