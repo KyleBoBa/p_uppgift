@@ -81,12 +81,18 @@ def sort_players(player_data):
     sorted_players = sorted(player_data, key=lambda x: (x['elo']))
     return sorted_players
 
-def distibute_players(player_data, team_list):
-    number_of_teams = len(team_list)
+def distribute_players(player_data, team_list):
+    num_teams = len(team_list)
+    sorted_players = sorted(player_data, key=lambda x: x['elo'])
+    teams = [[] for _ in range(num_teams)]
     players_per_team = 5
 
-    for i in player_data:
-        if 
+    for i, player in enumerate(sorted_players):
+        team_index = i % num_teams
+        if len(teams[team_index]) < players_per_team:
+            teams[team_index].append(player)
+
+    return teams
 
 def manual_distribute_players():
     pass
@@ -120,8 +126,8 @@ def main():
     sort_players(player_data)
     team_list = create_team()
     sorted_player_list = sort_players(player_data)
-    distributed_teams = distibute_players(player_data, team_list)
-    for i, team in enumerate(distributed_teams):
+    teams = distribute_players(player_data, team_list)
+    for i, team in enumerate(teams):
         print(f"Team {i + 1}: {team}")
 
 if __name__ == "__main__":
