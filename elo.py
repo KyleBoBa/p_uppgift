@@ -81,10 +81,6 @@ def create_team(player_data): #skapar lag baserat på hur många spelare använd
         team_list.append(team)
     return team_list
 
-def sort_players(player_data):
-    sorted_players = sorted(player_data, key=lambda x: (x['elo']))
-    return sorted_players
-
 def distribute_players(player_data, team_list):
     num_teams = len(team_list)
     sorted_players = sorted(player_data, key=lambda x: x['elo'])
@@ -174,8 +170,8 @@ def fight(player_a, player_b):
 
 def simulate_mid_game(teams):
     for i in range(len(teams[0])):
-        player_a = teams[0][i]
-        player_b = teams[1][i]
+        player_a = teams[0][i] #spelare i lag 1
+        player_b = teams[1][i] #spelare i lag 2
         
         battle_result = fight(player_a, player_b)
         
@@ -216,9 +212,7 @@ def main():
     player_data = read_player_data()
     player_data = assign_elo(player_data)
     present_top_players(player_data)
-    sort_players(player_data)
     team_list = create_team(player_data)
-    sorted_player_list = sort_players(player_data)
     teams = distribute_players(player_data, team_list)
     for i, team in enumerate(teams):
         print(f"Team {i + 1}: {team}\n")
