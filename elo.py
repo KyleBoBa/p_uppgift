@@ -179,15 +179,22 @@ def simulate_mid_game(teams):
             teams[0][i]['won_matches'] += 1
         else:
             teams[1][i]['won_matches'] += 1
-    if teams[0][i]['won_matches'] > teams[1][i]['won_matches']:
+        print(teams[0][i]['won_matches'])
+        print(teams[1][i]['won_matches'])
+
+    team1_wins = sum(player['won_matches'] for player in teams[0])
+    team2_wins = sum(player['won_matches'] for player in teams[1])
+
+    if team1_wins > team2_wins:
         for player in teams[1]:
             player['win_late'] *= 0.5
     else:
         for player in teams[0]:
             player['win_late'] *= 0.5
-    
+
 def simulate_late_game(teams):
-    pass
+    for i in range(len(teams[0])):
+        pass
 
 def adjust_player_elo(player_data):
     pass
