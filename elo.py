@@ -76,7 +76,7 @@ def create_team(player_data): #skapar lag baserat på hur många spelare använd
     total_teams = total_players // 5
     print(f"Det kommer att skapas {total_teams} lag")
     team_list = []
-    for i in range(total_teams):
+    for _ in range(total_teams):
         team = []
         team_list.append(team)
     return team_list
@@ -116,47 +116,80 @@ def simulate_early_game(teams):
     counter = 0  # räknar när resultat har blivit printat 5 gånger (alla möjliga parningar)
     team1_wins = 0  #räknare för vinster
     team2_wins = 0  
-    
+    print("Matchen har startat, vi får se hur det går för lagen i early-game.")
+    print(u"\u2500" * 68)
     for i, team in enumerate(teams):
         for j, player in enumerate(team):
-            opponent_team = teams[1 - i]  # motstående lag
-            opponent_player = opponent_team[j]  # motstående spelare
+            opponent_team = teams[1 - i] #motstående lag
+            opponent_player = opponent_team[j] #motstående spelare
             if player['win_early'] > opponent_player['win_early']:
-                result = "won"
-                opponent_result = "lost"
+                result = "vann"
+                opponent_result = "förlorade"
                 if i == 0:
                     team1_wins += 1
                 else:
                     team2_wins += 1
             else:
-                result = "lost"
-                opponent_result = "won"
+                result = "förlora"
+                opponent_result = "vann"
                 if i == 0:
                     team2_wins += 1
                 else:
                     team1_wins += 1
-            print(f"Player {j+1} in Team {i+1} {result} in early game against Player {j+1} in Team {2-i} ({opponent_result}).")
+            print(f"Spelare {j+1} i lag {i+1} {result} i early game mot spelare {j+1} i lag {2-i} ({opponent_result})")
             counter += 1
-            if counter == 5:  # avsluta loop
+            if counter == 5: #avsluta loop
                 break
         if counter == 5:
             break
     
     print(f"Team 1 wins: {team1_wins}")
-    print(f"Team 2 wins: {team2_wins}")
-    
+    print(f"Team 2 wins: {team2_wins}\n")
     if team1_wins > 3:
         for player in teams[1]:
-            player['win_mid'] *= 0.8  # minska med chans att vinna mid game med 20%
-        print("Spelarna i lag 2 har hamnat under i early game, de kommer få kämpa ännu hårdare i midgame då deras chanser har minskat med 20%")
+            player['win_mid'] *= 0.9  #minska chans att vinna mid game med 20%
+        print("Spelarna i lag 2 har hamnat under i early game.\nDe kommer få att kämpa ännu hårdare i midgame då deras chanser att vinna har nu minskat med 10%.\n")
     elif team2_wins > 3:
         for player in teams[0]:
-            player['win_mid'] *= 0.8
-        print("Spelarna i lag 1 har hamnat under i early game, de kommer få kämpa ännu hårdare i midgame då deras chanser har minskat med 20%")
+            player['win_mid'] *= 0.9
+        print("Spelarna i lag 1 har hamnat under i early game.\nDe kommer få kämpa ännu hårdare i midgame då deras chanser har minskat med 10%.\n")
+    else:
+        if team1_wins > team2_wins:
+            print(f"Båda lagen hade ett relativt bra early-game med lag 1 som kom ut på topp.\nVi får se om lag 2 drar tillbaka det i mid-game.")
+        else:
+            print(f"Båda lagen hade ett relativt bra early-game med lag 2 som kom ut på topp.\nVi får se om lag 1 drar tillbaka det i mid-game.")
+def fight(player_a, player_b):
+    attacker_strength = sum(random.randint(1, 6) for _ in range(int(player_a['win_mid'] * 10)))
+    defender_strength = sum(random.randint(1, 6) for _ in range(int(player_b['win_mid'] * 10)))
+
+    print(f"{player_a['name']} attackerar med: {attacker_strength}")
+    print(f"{player_b['name']} försvarar med: {defender_strength}")
+
+    if attacker_strength > defender_strength:
+        print("Defender lost!\n----------------------------------------------")
+        return 1
+    else:
+        print("Attacker lost!\n----------------------------------------------")
+        return 0
 
 def simulate_mid_game(teams):
-    pass
-
+    for i in range(len(teams[0])):
+        player_a = teams[0][i]
+        player_b = teams[1][i]
+        
+        battle_result = fight(player_a, player_b)
+        
+        if battle_result == 1:
+            teams[0][i]['won_matches'] += 1
+        else:
+            teams[1][i]['won_matches'] += 1
+    if teams[0][i]['won_matches'] > teams[1][i]['won_matches']:
+        for player in teams[1]:
+            player['win_late'] *= 0.5
+    else:
+        for player in teams[0]:
+            player['win_late'] *= 0.5
+    
 def simulate_late_game(teams):
     pass
 
@@ -168,8 +201,8 @@ def match_result():
 
 def present_top_players(player_data):
     sorted_players = sorted(player_data, key=lambda x: (x['won_matches'] / x['total_matches']) if x['total_matches'] > 0 else 0)
-    print("Plac \tNamn \t     vunna    spelade andel vunna")
-    print(u'\u2500' * 50)
+    print("Plac \tNamn \t     vunna    spelade  vinst %")
+    print(u"\u2500" * 48)
     for i, player in enumerate(sorted_players[:10]):
         if player['total_matches'] > 0:
             win_ratio = player['won_matches'] / player['total_matches']
@@ -188,9 +221,36 @@ def main():
     sorted_player_list = sort_players(player_data)
     teams = distribute_players(player_data, team_list)
     for i, team in enumerate(teams):
-        print(f"Team {i + 1}: {team}")
+        print(f"Team {i + 1}: {team}\n")
     simulate_match(player_data, teams)
 
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
+
+"""team1 = 0
+    team2 = 0
+    for _ in range(teams[0][-1]):
+        team1 += random.randint(1,5)
+    for _ in range(teams[1][-1]):
+        team2 += random.randint(1,5)
+
+    print('Lag1:', teams[0])
+    print('Lag2:', teams[1])
+    print('Spelare {} i lag 1 slåss mot spelare {} i lag 2.'.format(teams[0][-1],teams[1][-1]))
+    print('Spelare {} i lag 1 attackerar med: {}'.format(teams[0][-1],team1))
+    print('Spelare {} i lag 2 försvarar dig med: {}'.format(teams[1][-1],team2))
+    if team1 < team2:
+        print('Attackerare dog!')
+        teams[0].pop()
+    elif team1 > team2:
+        print('Försvarare dog!')
+        teams[1].pop()
+    else:
+        print('Ingen dog')
+    print('----------------------------------------------')"""
