@@ -4,6 +4,14 @@ import random
 import csv
 from player import Player
 
+def introduction(player_data):
+    print("Välkommen till League of Legends matchmaking systemet\n")
+    print("Här så möts spelare i en 5 mot 5 match för att ta reda på vem som är bäst!\n")
+    print("Just nu ser tabellen av toppspelarna ut såhär:")
+    present_top_players(player_data)
+    print("\nFör att påbörja en ny macth skriv in spelare.")
+
+
 def menu():
     pass
 
@@ -65,6 +73,9 @@ def create_team(player_data): #skapar lag baserat på hur många spelare använd
             total_players = int(input("Hur många spelare är tillgängliga att köra? "))
             if total_players > len(player_data):
                 print("Det finns inte så många spelare i databasen, skriv ett mindre antal eller lägg till nya spelare manuellt")
+            elif total_players < 10:
+                print("Det finns inte nog med spelare för att börja matchen.")
+                break
             else:
                 break
         except ValueError:
@@ -106,7 +117,7 @@ def simulate_match(player_data, teams):
 
     adjust_player_elo(player_data)
 
-    match_result()
+    #match_result()
 
 def simulate_early_game(teams):
     counter = 0  # räknar när resultat har blivit printat 5 gånger (alla möjliga parningar)
@@ -179,8 +190,6 @@ def simulate_mid_game(teams):
             teams[0][i]['won_matches'] += 1
         else:
             teams[1][i]['won_matches'] += 1
-        print(teams[0][i]['won_matches'])
-        print(teams[1][i]['won_matches'])
 
     team1_wins = sum(player['won_matches'] for player in teams[0])
     team2_wins = sum(player['won_matches'] for player in teams[1])
@@ -199,8 +208,8 @@ def simulate_late_game(teams):
 def adjust_player_elo(player_data):
     pass
 
-def match_result():
-    print(f"Match vinnaren är {match_winner}")
+#def match_result(match_winner):
+    #print(f"Match vinnaren är {match_winner}")
 
 def present_top_players(player_data):
     sorted_players = sorted(player_data, key=lambda x: (x['won_matches'] / x['total_matches']) if x['total_matches'] > 0 else 0)
@@ -214,17 +223,20 @@ def present_top_players(player_data):
         print(f"{i + 1:<2} \t{player['name']:<12.10}  {player['won_matches']:2}\t{player['total_matches']:2} \t{win_ratio:.2f}")
 
 def main():
+    
     players = {}
     """manual_create_player(players)"""
     player_data = read_player_data()
     player_data = assign_elo(player_data)
-    present_top_players(player_data)
+    introduction(player_data)
+    
     team_list = create_team(player_data)
-    teams = distribute_players(player_data, team_list)
-    for i, team in enumerate(teams):
-        print(f"Team {i + 1}: {team}\n")
-    simulate_match(player_data, teams)
-
+    if not team_list == []:
+        teams = distribute_players(player_data, team_list)
+        for i, team in enumerate(teams):
+            print(f"Team {i + 1}: {team}\n")
+        simulate_match(player_data, teams)
+        #match_result()
 
 if __name__ == "__main__":
     main()
