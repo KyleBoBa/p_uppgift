@@ -45,6 +45,9 @@ class Team:
     def add_player(self, player):
         self.add_player.append(player)
 
+    def remove_player(self, player):
+        self.remove_player.append(player)
+
 class Match:
     def __init__(self):
         pass

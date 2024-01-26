@@ -109,7 +109,7 @@ def distribute_players(player_data, team_list):
 def manual_distribute_players():
     pass
 
-def simulate_match(player_data, teams):
+def simulate_match(teams):
 
     simulate_early_game(teams) #Stage 1 - early game
 
@@ -135,7 +135,7 @@ def simulate_early_game(teams):
                 else:
                     team2_wins += 1
             else:
-                result = "förlora"
+                result = "förlorade"
                 opponent_result = "vann"
                 if i == 0:
                     team2_wins += 1
@@ -261,7 +261,7 @@ def main():
             for player in team:
                 print(player['name'], end=" ")
             print()
-        simulate_match(player_data, teams)
+        simulate_match(teams)
         present_top_players(player_data)
 
 if __name__ == "__main__":
