@@ -56,40 +56,45 @@ def manual_create_player(player_data): #manuellt skapa spelare för databasen ge
 
 def read_player_data(): #läser in info från fil och lagrar spelar dictionary i listan
     player_data = []
-    try:
-        with open('players.csv', 'r') as file:
-            csv_reader = csv.reader(file, delimiter=';')
-            next(csv_reader)  #hoppa över header row
-            for line in csv_reader:
-                player_id = int(line[0].strip())
-                player_name = line[1].strip()
-                win_early = float(line[2].strip())
-                win_mid = float(line[3].strip())
-                win_late = float(line[4].strip())
-                won_matches = int(line[5].strip())
-                total_matches = int(line[6].strip())
+    while True:
+        try:
+            infile_name = input("Vilken fil vill du läsa in spelar datan från? ")
+            with open(infile_name, 'r') as file:
+                csv_reader = csv.reader(file, delimiter=';')
+                next(csv_reader)  #hoppa över header row
+                for line in csv_reader:
+                    player_id = int(line[0].strip())
+                    player_name = line[1].strip()
+                    win_early = float(line[2].strip())
+                    win_mid = float(line[3].strip())
+                    win_late = float(line[4].strip())
+                    won_matches = int(line[5].strip())
+                    total_matches = int(line[6].strip())
 
-                #validera data
-                if not (0 <= win_early <= 1):
-                    raise ValueError("Invalid win_early value")
-                if not (0 <= win_mid <= 1):
-                    raise ValueError("Invalid win_mid value")
-                if not (0 <= win_late <= 1):
-                    raise ValueError("Invalid win_late value")
-                if not (0 <= won_matches <= total_matches):
-                    raise ValueError("Invalid won_matches or total_matches value")
-                
-                player_data.append({
-                    'player_id': player_id,
-                    'name': player_name,
-                    'win_early': win_early,
-                    'win_mid': win_mid,
-                    'win_late': win_late,
-                    'won_matches': won_matches,
-                    'total_matches': total_matches
-                })
-    except ValueError:
-        print("Inkorrekt data värden, kolla över filen")
+                    #validera data
+                    if not (0 <= win_early <= 1):
+                        raise ValueError("Invalid win_early value")
+                    if not (0 <= win_mid <= 1):
+                        raise ValueError("Invalid win_mid value")
+                    if not (0 <= win_late <= 1):
+                        raise ValueError("Invalid win_late value")
+                    if not (0 <= won_matches <= total_matches):
+                        raise ValueError("Invalid won_matches or total_matches value")
+                    
+                    player_data.append({
+                        'player_id': player_id,
+                        'name': player_name,
+                        'win_early': win_early,
+                        'win_mid': win_mid,
+                        'win_late': win_late,
+                        'won_matches': won_matches,
+                        'total_matches': total_matches
+                    })
+                break
+        except ValueError:
+            print("Inkorrekt data värden, kolla över filen och se till att det är korrekt format")
+        except FileNotFoundError:
+            print("Filen som du vill läsa in från finns inte, kolla vad du skrev och försök igen\n")
     return player_data
 
 def assign_base_elo(player_data): #sätter alla spelares base elo till 1200
@@ -277,7 +282,7 @@ def simulate_late_game(teams): #simulering av late game, medelvärde av lagens c
 
     for player in match_winner:
         player['won_matches'] += 1
-        player['elo'] += 10
+        player['elo'] += 15
 
     for team in teams:
         for player in team:
@@ -285,16 +290,15 @@ def simulate_late_game(teams): #simulering av late game, medelvärde av lagens c
                 player['elo'] -= 10
 
 def present_top_players(player_data): #tabell för de bästa spelarna, sorteras baserat på matcher spelade sen andel matcher vunna
-    sorted_players = sorted(player_data, key=lambda x: (x['total_matches'], x['won_matches'] / x['total_matches']) if x['total_matches'] > 0 else (0, 0), reverse=True)
-    print("Plac \tNamn \t     vunna    spelade  vinst %")
-    print(u"\u2500" * 48)
+    sorted_players = sorted(player_data, key=lambda x: x['elo'], reverse=True)
+    print("Plac \tNamn \t      ELO      vunna  spelade  vinst %")
+    print(u"\u2500" * 52)
     for i, player in enumerate(sorted_players[:10]):
         if player['total_matches'] > 0:
-            win_ratio = player['won_matches'] / player['total_matches']
-            win_ratio *= 100
+            win_ratio = 100 * player['won_matches'] / player['total_matches']
         else:
             win_ratio = 0
-        print(f"{i + 1:<2} \t{player['name']:<12.10}  {player['won_matches']:2}\t{player['total_matches']:2} \t{win_ratio:.2f}")
+        print(f"{i + 1:<2} \t{player['name']:<12.10}  {player['elo']}\t{player['won_matches']:2}\t{player['total_matches']:2} \t{win_ratio:.0f}%")
 
 def write_to_file(player_data): #skriver ut tidiage tabell till en fil i .csv format
     file_name = input("Skriv in filnamnet (inklusive .csv): ")
@@ -302,13 +306,13 @@ def write_to_file(player_data): #skriver ut tidiage tabell till en fil i .csv fo
         sorted_players = sorted(player_data, key=lambda x: (x['total_matches'], x['won_matches'] / x['total_matches']) if x['total_matches'] > 0 else (0, 0), reverse=True)
         with open(file_name, 'w', newline='') as file:
             csv_writer = csv.writer(file, delimiter=';')
-            csv_writer.writerow(["Plac", "Namn", "Vunna", "Spelade", "Vinst %"])
+            csv_writer.writerow(["Plac", "Namn", "Vunna", "Spelade", "Vinst %", "ELO"])
             for i, player in enumerate(sorted_players[:10]):
                 if player['total_matches'] > 0:
                     win_ratio = player['won_matches'] / player['total_matches']
                 else:
                     win_ratio = 0
-                csv_writer.writerow([i + 1, player['name'], player['won_matches'], player['total_matches'], f"{win_ratio:.2%}"])
+                csv_writer.writerow([i + 1, player['name'], player['won_matches'], player['total_matches'], f"{win_ratio:.2%}", player['elo']])
         print("Scoreboard written to file successfully.")
     except IOError:
         print("Error writing to file.")
