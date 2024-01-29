@@ -1,13 +1,13 @@
 class Player:
-    def __init__(self, name, win_early, win_mid, win_late, won_matches, total_matches, elo=1200):
+    def __init__(self, player_id, name, win_early, win_mid, win_late):
+        self.player_id = player_id
         self.name = name
         self.win_early = win_early
         self.win_mid = win_mid
         self.win_late = win_late
-        self.won_matches = won_matches
-        self.total_matches = total_matches
-        self.elo = elo
-        self.team = None
+        self.won_matches = 0
+        self.total_matches = 0
+        self.elo = 1200
     
     def __str__(self):
         return f"{self.name} har spelat {self.total_matches} och vunnit {self.won_matches}"
@@ -37,17 +37,3 @@ class Player:
     
     def assign_team(self, team):
         self.team = team
-
-class Team:
-    def __init__(self):
-        self.players = []
-
-    def add_player(self, player):
-        self.add_player.append(player)
-
-    def remove_player(self, player):
-        self.remove_player.append(player)
-
-class Match:
-    def __init__(self):
-        pass

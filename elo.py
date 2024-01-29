@@ -4,26 +4,55 @@ import random
 import csv
 from player import Player
 
-def introduction(player_data):
+def introduction(player_data): #liten introduktion till programmet och vad användaren kan förvänta sig
     print("Välkommen till League of Legends matchmaking systemet\n")
     print("Här så möts spelare i en 5 mot 5 match för att ta reda på vem som är bäst!\n")
     print("Just nu ser tabellen av toppspelarna ut såhär:")
     present_top_players(player_data)
-    print("\nFör att påbörja en ny macth skriv in spelare.\n")
 
-
-def menu():
-    pass
-
-"""def manual_create_player(players): #återkommer till denna
-    namn = input("Vad heter din spelare? ")
+def menu(player_data): #meny för de olika funktionerna av programmet
     while True:
+        print("\nMeny")
+        print(u"\u2500" * 20)
+        print("1. Kör en match")
+        print("2. Skriv ut tabellen")
+        print("3. Lägg till en ny spelare")
+        print("4. Skriv ut tabellen till fil")
+        print("5. Avsluta")
         try:
-            elo = int(input("Vad har din spelare för elo? "))
-            players[namn] = elo
-            break
+            choice = int(input("\nVad vill du göra? "))
+            if choice == 1:
+                run_match(player_data)
+            elif choice == 2:
+                present_top_players(player_data)
+            elif choice == 3:
+                """manual_create_player(player_data)"""
+            elif choice == 4:
+                write_to_file(player_data)
+            elif choice == 5:
+                print("Tack för du kört programmet")
+                break
+            else:
+                print("Välj ett av alternativen in menyn")
         except ValueError:
-            print("Elo måste vara insatt som en integer, försök igen.")"""
+            print("Ditt val är inte ett giltigt svarsalternativ, försök igen\n")
+
+def manual_create_player(player_data): #manuellt skapa spelare för databasen
+    player_id = input("Vilket ID får din spelare? ")
+    name = input("Vad heter din spelare? ")
+    win_early = input("Vad har din spelare för chans att vinna early game? ")
+    win_mid = input("Vad har din spelare för chans att vinna mid game? ")
+    win_late = input("Vad har din spelare för chans att vinna late game? ")
+
+    player = Player(
+                    player_id, #spelar id
+                    name, #namn på spelare
+                    win_early, #chans att vinna early game
+                    win_mid, #chans att vinna mid game,
+                    win_late, #chans att vinna late game,
+                    )
+    player_data.append({player})
+    return player_data
 
 def read_player_data(): #läser in info från fil och lagrar spelar dictionary i listan
     player_data = []
@@ -63,11 +92,23 @@ def read_player_data(): #läser in info från fil och lagrar spelar dictionary i
         print("Inkorrekt data värden, kolla över filen")
     return player_data
 
-def assign_elo(player_data):
+def assign_base_elo(player_data): #sätter alla spelares base elo till 1200
     base_player_elo = 1200
     for player in player_data:
         player['elo'] = base_player_elo
     return player_data
+
+def run_match(player_data): #lag skapas och simulering körs
+    team_list = create_team(player_data)
+    if not team_list == []:
+        teams = distribute_players(player_data, team_list)
+        for i, team in enumerate(teams):
+            print(f"Team {i + 1}: ", end="")
+            for player in team:
+                print(player['name'], end=" ")
+            print()
+        simulate_match(teams)
+        present_top_players(player_data)
 
 def create_team(player_data): #skapar lag baserat på hur många spelare användaren matar in
     while True:
@@ -94,7 +135,7 @@ def create_team(player_data): #skapar lag baserat på hur många spelare använd
         team_list.append(team)
     return team_list
 
-def distribute_players(player_data, team_list):
+def distribute_players(player_data, team_list): #delar ut spelarna till lag, sorterar baserat på elo så att det inte är ojämnt
     num_teams = len(team_list)
     sorted_players = sorted(player_data, key=lambda x: x['elo'])
     teams = [[] for _ in range(num_teams)]
@@ -106,10 +147,7 @@ def distribute_players(player_data, team_list):
             teams[team_index].append(player)
     return teams
 
-def manual_distribute_players():
-    pass
-
-def simulate_match(teams):
+def simulate_match(teams): #match simulering av de tre faserna
 
     simulate_early_game(teams) #Stage 1 - early game
 
@@ -117,11 +155,11 @@ def simulate_match(teams):
 
     simulate_late_game(teams) #Stage 3 - late game
 
-def simulate_early_game(teams):
+def simulate_early_game(teams): #simulerar early game, spelare 1 för lag 1 möter spelare 1 för lag 2 osv..
     counter = 0  # räknar när resultat har blivit printat 5 gånger (alla möjliga parningar)
     team1_wins = 0  #räknare för vinster
     team2_wins = 0  
-    print("\nMatchen har startat, vi får se hur det går för lagen i early-game.")
+    print("\nMatchen har startat, vi får se hur det går för lagen i early game.")
     print(u"\u2500" * 68)
     for i, team in enumerate(teams):
         for j, player in enumerate(team):
@@ -152,20 +190,28 @@ def simulate_early_game(teams):
     print(f"Team 2 wins: {team2_wins}\n")
     if team1_wins > 3:
         for player in teams[1]:
-            player['win_mid'] *= 0.9  #minska chans att vinna mid game med 20%
-        print("Spelarna i team 2 har hamnat under i early game.\nDe kommer få att kämpa ännu hårdare i midgame då deras chanser att vinna har nu minskat med 10%.\n")
+            player['temp_win_mid'] = player['win_mid'] * 0.9
+        for player in teams[0]:
+            player['temp_win_mid'] = player['win_mid']
+        print("Spelarna i team 2 har hamnat under i early game.\nDe kommer få att kämpa ännu hårdare i mid game då deras chanser att vinna har nu minskat med 10%.\n")
     elif team2_wins > 3:
         for player in teams[0]:
-            player['win_mid'] *= 0.9
-        print("Spelarna i team 1 har hamnat under i early game.\nDe kommer få kämpa ännu hårdare i midgame då deras chanser har minskat med 10%.\n")
+            player['temp_win_mid'] = player['win_mid'] * 0.9
+        for player in teams[1]:
+            player['temp_win_mid'] = player['win_mid']
+        print("Spelarna i team 1 har hamnat under i early game.\nDe kommer få kämpa ännu hårdare i mid game då deras chanser har minskat med 10%.\n")
     else:
+        for team in teams:
+            for player in team:
+                player['temp_win_mid'] = player['win_mid']
         if team1_wins > team2_wins:
-            print(f"Båda lagen hade ett relativt bra early-game med lag 1 som kom ut på topp.\nVi får se om lag 2 drar tillbaka det i mid-game då det inte är över.")
+            print(f"Båda lagen hade ett relativt bra early game med lag 1 som kom ut på topp.\nVi får se om lag 2 drar tillbaka det i mid game då det inte är över.")
         else:
-            print(f"Båda lagen hade ett relativt bra early-game med lag 2 som kom ut på topp.\nVi får se om lag 1 drar tillbaka det i mid-game då det inte är över.")
-def fight(player_a, player_b):
-    attacker_strength = sum(random.randint(1, 6) for _ in range(int(player_a['win_mid'] * 10)))
-    defender_strength = sum(random.randint(1, 6) for _ in range(int(player_b['win_mid'] * 10)))
+            print(f"Båda lagen hade ett relativt bra early game med lag 2 som kom ut på topp.\nVi får se om lag 1 drar tillbaka det i mid game då det inte är över.")
+
+def fight(player_a, player_b): #simulerar fighten i mid game, spelarnas chans att vinna mid game dikterar deras strenght med hjälp av chans 
+    attacker_strength = sum(random.randint(1, 6) for _ in range(int(player_a['temp_win_mid'] * 10)))
+    defender_strength = sum(random.randint(1, 6) for _ in range(int(player_b['temp_win_mid'] * 10)))
 
     print(f"{player_a['name']} attackerar med: {attacker_strength}")
     print(f"{player_b['name']} försvarar med: {defender_strength}")
@@ -177,7 +223,7 @@ def fight(player_a, player_b):
         print("Attacker lost!\n----------------------------------------------")
         return 0
 
-def simulate_mid_game(teams):
+def simulate_mid_game(teams): #simulering av mid game, lag med flest vinnare har större chans att vinna late game
     team1_wins = 0
     team2_wins = 0
     for i in range(len(teams[0])):
@@ -193,22 +239,25 @@ def simulate_mid_game(teams):
 
     if team1_wins > team2_wins:
         for player in teams[1]:
-            player['win_late'] *= 0.7
+            player['temp_win_late'] = player['win_late'] * 0.7
+        for player in teams[0]:
+            player['temp_win_late'] = player['win_late']
     else:
         for player in teams[0]:
-            player['win_late'] *= 0.7
+            player['temp_win_late'] = player['win_late'] * 0.7
+        for player in teams[1]:
+            player['temp_win_late'] = player['win_late']
 
-
-def simulate_late_game(teams):
+def simulate_late_game(teams): #simulering av late game, medelvärde av lagens chans att vinna late game dikterar vinnare av matchen
     print("Det börjar närma sig slutet av matchen, dags att se vilket lag som vinner.\n")
-    team1_average = sum(player['win_late'] for player in teams[0]) / len(teams[0])
-    team2_average = sum(player['win_late'] for player in teams[1]) / len(teams[1])
+    team1_average = sum(player['temp_win_late'] for player in teams[0]) / len(teams[0])
+    team2_average = sum(player['temp_win_late'] for player in teams[1]) / len(teams[1])
 
     if team1_average > team2_average:
-        print("Team 1 wins the late game!")
+        print("Lag 1 vinner i late game!")
         match_winner = teams[0]
     elif team1_average < team2_average:
-        print("Team 2 wins the late game!")
+        print("Lag 2 vinner i late game!")
         match_winner = teams[1]
     else:
         team1_strongest_player = max(teams[0], key=lambda x: x['win_late'])
@@ -235,8 +284,8 @@ def simulate_late_game(teams):
             if player not in match_winner:
                 player['elo'] -= 10
 
-def present_top_players(player_data):
-    sorted_players = sorted(player_data, key=lambda x: (x['won_matches'] / x['total_matches']) if x['total_matches'] > 0 else 0)
+def present_top_players(player_data): #tabell för de bästa spelarna, sorteras baserat på matcher spelade sen andel matcher vunna
+    sorted_players = sorted(player_data, key=lambda x: (x['total_matches'], x['won_matches'] / x['total_matches']) if x['total_matches'] > 0 else (0, 0), reverse=True)
     print("Plac \tNamn \t     vunna    spelade  vinst %")
     print(u"\u2500" * 48)
     for i, player in enumerate(sorted_players[:10]):
@@ -246,23 +295,29 @@ def present_top_players(player_data):
             win_ratio = 0
         print(f"{i + 1:<2} \t{player['name']:<12.10}  {player['won_matches']:2}\t{player['total_matches']:2} \t{win_ratio:.2f}")
 
-def main():
-    players = {}
-    """manual_create_player(players)"""
+def write_to_file(player_data): #skriver ut tidiage tabell till en fil i .csv format
+    file_name = input("Skriv in filnamnet (inklusive .csv): ")
+    try:
+        sorted_players = sorted(player_data, key=lambda x: (x['total_matches'], x['won_matches'] / x['total_matches']) if x['total_matches'] > 0 else (0, 0), reverse=True)
+        with open(file_name, 'w', newline='') as file:
+            csv_writer = csv.writer(file, delimiter=';')
+            csv_writer.writerow(["Plac", "Namn", "Vunna", "Spelade", "Vinst %"])
+            for i, player in enumerate(sorted_players[:10]):
+                if player['total_matches'] > 0:
+                    win_ratio = player['won_matches'] / player['total_matches']
+                else:
+                    win_ratio = 0
+                csv_writer.writerow([i + 1, player['name'], player['won_matches'], player['total_matches'], f"{win_ratio:.2%}"])
+        print("Scoreboard written to file successfully.")
+    except IOError:
+        print("Error writing to file.")
+
+
+def main(): #huvud funktion
     player_data = read_player_data()
-    player_data = assign_elo(player_data)
+    player_data = assign_base_elo(player_data)
     introduction(player_data)
-    
-    team_list = create_team(player_data)
-    if not team_list == []:
-        teams = distribute_players(player_data, team_list)
-        for i, team in enumerate(teams):
-            print(f"Team {i + 1}: ", end="")
-            for player in team:
-                print(player['name'], end=" ")
-            print()
-        simulate_match(teams)
-        present_top_players(player_data)
+    menu(player_data)
 
 if __name__ == "__main__":
     main()
