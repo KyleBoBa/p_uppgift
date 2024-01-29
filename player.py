@@ -12,6 +12,7 @@ class Player:
     def __str__(self):
         return f"{self.name} har spelat {self.total_matches} och vunnit {self.won_matches}"
 
+#dessa metoder är inte funktionella vid nuläget, möjligtvis tilläggs
     def change_win_early(self, win_early):
         self.win_early = win_early
         return self.win_early

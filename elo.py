@@ -37,7 +37,7 @@ def menu(player_data): #meny för de olika funktionerna av programmet
         except ValueError:
             print("Ditt val är inte ett giltigt svarsalternativ, försök igen\n")
 
-def manual_create_player(player_data): #manuellt skapa spelare för databasen
+def manual_create_player(player_data): #manuellt skapa spelare för databasen genom Player klass
     player_id = input("Vilket ID får din spelare? ")
     name = input("Vad heter din spelare? ")
     win_early = input("Vad har din spelare för chans att vinna early game? ")
@@ -179,27 +179,27 @@ def simulate_early_game(teams): #simulerar early game, spelare 1 för lag 1 möt
                     team2_wins += 1
                 else:
                     team1_wins += 1
-            print(f"Spelare {j+1} i team {i+1} {result} i early game mot spelare {j+1} i lag {2-i} ({opponent_result})")
+            print(f"Spelare {j+1} i lag {i+1} {result} i early game mot spelare {j+1} i lag {2-i} ({opponent_result})")
             counter += 1
             if counter == 5: #avsluta loop
                 break
         if counter == 5:
             break
     
-    print(f"Team 1 wins: {team1_wins}")
-    print(f"Team 2 wins: {team2_wins}\n")
+    print(f"Lag 1 vinner: {team1_wins}")
+    print(f"Lag 2 vinner: {team2_wins}\n")
     if team1_wins > 3:
         for player in teams[1]:
             player['temp_win_mid'] = player['win_mid'] * 0.9
         for player in teams[0]:
             player['temp_win_mid'] = player['win_mid']
-        print("Spelarna i team 2 har hamnat under i early game.\nDe kommer få att kämpa ännu hårdare i mid game då deras chanser att vinna har nu minskat med 10%.\n")
+        print("Spelarna i lag 2 har hamnat under i early game.\nDe kommer få att kämpa ännu hårdare i mid game då deras chanser att vinna har nu minskat med 10%.\n")
     elif team2_wins > 3:
         for player in teams[0]:
             player['temp_win_mid'] = player['win_mid'] * 0.9
         for player in teams[1]:
             player['temp_win_mid'] = player['win_mid']
-        print("Spelarna i team 1 har hamnat under i early game.\nDe kommer få kämpa ännu hårdare i mid game då deras chanser har minskat med 10%.\n")
+        print("Spelarna i lag 1 har hamnat under i early game.\nDe kommer få kämpa ännu hårdare i mid game då deras chanser har minskat med 10%.\n")
     else:
         for team in teams:
             for player in team:
@@ -217,10 +217,10 @@ def fight(player_a, player_b): #simulerar fighten i mid game, spelarnas chans at
     print(f"{player_b['name']} försvarar med: {defender_strength}")
 
     if attacker_strength > defender_strength:
-        print("Defender lost!\n----------------------------------------------")
+        print("Attackerare vann!\n----------------------------------------------")
         return 1
     else:
-        print("Attacker lost!\n----------------------------------------------")
+        print("Försvare vann!\n----------------------------------------------")
         return 0
 
 def simulate_mid_game(teams): #simulering av mid game, lag med flest vinnare har större chans att vinna late game
@@ -291,6 +291,7 @@ def present_top_players(player_data): #tabell för de bästa spelarna, sorteras 
     for i, player in enumerate(sorted_players[:10]):
         if player['total_matches'] > 0:
             win_ratio = player['won_matches'] / player['total_matches']
+            win_ratio *= 100
         else:
             win_ratio = 0
         print(f"{i + 1:<2} \t{player['name']:<12.10}  {player['won_matches']:2}\t{player['total_matches']:2} \t{win_ratio:.2f}")
@@ -311,7 +312,6 @@ def write_to_file(player_data): #skriver ut tidiage tabell till en fil i .csv fo
         print("Scoreboard written to file successfully.")
     except IOError:
         print("Error writing to file.")
-
 
 def main(): #huvud funktion
     player_data = read_player_data()
